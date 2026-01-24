@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         rust-version: [ nightly ]
-        os: [ windows-latest-l, Linux ]
+        os: [ windows-latest-l, ubuntu-latest-m ]
         experimental: [ false ]
 
     steps:
