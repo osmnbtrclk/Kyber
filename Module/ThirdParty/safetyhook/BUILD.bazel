@@ -1,0 +1,20 @@
+cc_library(
+    name = "safetyhook",
+    srcs = [
+        "safetyhook/safetyhook.cpp",
+        "safetyhook/safetyhook.hpp",
+    ],
+    hdrs = [
+        "safetyhook/safetyhook.hpp",
+    ],
+    defines = [
+        "SAFETYHOOK_OS_WINDOWS",
+    ],
+    includes = [
+        "safetyhook",
+    ],
+    deps = [
+        "//ThirdParty/zydis",
+    ],
+    visibility = ["//visibility:public"],
+)

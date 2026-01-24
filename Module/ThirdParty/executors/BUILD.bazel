@@ -1,0 +1,8 @@
+cc_library(
+    name = "executors",
+    hdrs = glob([
+        "executors/include/**/*.h",
+    ]),
+    includes = ["executors/include"],
+    visibility = ["//visibility:public"],
+)

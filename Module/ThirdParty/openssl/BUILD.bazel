@@ -1,0 +1,19 @@
+cc_library(
+    name = "openssl",
+    srcs = [
+        "lib/libcrypto_static.lib",
+        "lib/libssl_static.lib",
+    ],
+    hdrs = glob([
+        "include/openssl/*.h",
+    ]),
+    includes = ["include"],
+    linkopts = [
+        "Advapi32.lib",
+        "/ignore:4075",
+        "/ignore:4098",
+        "/ignore:4099",
+        "/FORCE:MULTIPLE",
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,11 @@
+cc_library(
+    name = "minhook",
+    srcs = glob([
+        "minhook/src/**/*.c",
+    ]),
+    hdrs = ["minhook/include/MinHook.h"] + glob([
+        "minhook/src/**/*.h",
+    ]),
+    includes = ["minhook/include"],
+    visibility = ["//visibility:public"],
+)

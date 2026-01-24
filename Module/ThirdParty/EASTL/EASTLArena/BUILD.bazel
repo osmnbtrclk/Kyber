@@ -1,0 +1,15 @@
+filegroup(
+    name = "srcs",
+    srcs = [
+        "EASTLArenaAllocator.cpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "EASTLArena",
+    hdrs = ["EASTLArenaAllocator.h", "EASTLConfig.h"],
+    include_prefix = "EASTLArena",
+    visibility = ["//visibility:public"],
+    deps = ["//ThirdParty/EABase"],
+)

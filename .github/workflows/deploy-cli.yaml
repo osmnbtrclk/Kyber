@@ -1,0 +1,108 @@
+name: Deploy CLI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - '.github/workflows/deploy-cli.yaml'
+      - 'CLI/docker/**'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      working-directory: ./CLI/docker
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-version: [ nightly ]
+        os: [ Linux ]
+        experimental: [ false ]
+
+    steps:
+      - name: Get branch names
+        id: branch-names
+        uses: tj-actions/branch-names@v8
+
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        run: |
+          curl -sL https://go.dev/dl/go1.23.4.linux-amd64.tar.gz | sudo tar -C /usr/local -xz
+          export PATH=$PATH:/usr/local/go/bin
+          go version
+
+      - name: Log into registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download CLI
+        working-directory: ${{env.working-directory}}
+        run: |
+          mkdir _work
+
+          curl -sL https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          chmod +x mc
+          ./mc alias set kyber https://s3.kyber.gg ${{ secrets.AWS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+          BRANCH="${{ steps.branch-names.outputs.current_branch }}"
+          
+          mc_exists() {
+            ./mc stat "kyber/$1" >/dev/null 2>&1
+          }
+
+          CLI_OBJ_BRANCH="releases/${BRANCH}/kyber-cli-linux64.zip"
+          CLI_OBJ_MAIN="releases/stable/kyber-cli-linux64.zip"
+          
+          if mc_exists "$CLI_OBJ_BRANCH"; then
+            CLI_OBJ="$CLI_OBJ_BRANCH"
+          else
+            CLI_OBJ="$CLI_OBJ_MAIN"
+          fi
+ 
+          MOD_OBJ_BRANCH="releases/${BRANCH}/kyber-module.zip"
+          MOD_OBJ_MAIN="releases/stable/kyber-module.zip"
+          if mc_exists "$MOD_OBJ_BRANCH"; then
+            MOD_OBJ="$MOD_OBJ_BRANCH"
+          else
+            MOD_OBJ="$MOD_OBJ_MAIN"
+          fi
+
+          ./mc cp "kyber/${CLI_OBJ}" .
+          ./mc cp "kyber/${MOD_OBJ}" .
+
+          unzip kyber-module.zip -d _work
+          unzip kyber-cli-linux64.zip -d _work
+
+          ls -l _work
+
+      - name: Normalize owner
+        run: echo "OWNER_LC=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Build Image
+        working-directory: ${{ env.working-directory }}
+        run: |
+          docker build -t ghcr.io/${OWNER_LC}/kyber-server:${{ github.sha }} .
+
+      - name: Push Image
+        working-directory: ${{ env.working-directory }}
+        run: |
+          docker push ghcr.io/${OWNER_LC}/kyber-server:${{ github.sha }}
+
+      - name: Push Image as latest
+        if: github.ref == 'refs/heads/stable'
+        run: |
+          docker tag ghcr.io/${OWNER_LC}/kyber-server:${{ github.sha }} ghcr.io/${OWNER_LC}/kyber-server:latest
+          docker push ghcr.io/${OWNER_LC}/kyber-server:latest

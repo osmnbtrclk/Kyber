@@ -1,0 +1,11 @@
+cc_library(
+    name = "ByteBuffer",
+    srcs = [
+        "ByteBuffer/ByteBuffer.cpp",
+    ],
+    hdrs = [
+        "ByteBuffer/ByteBuffer.hpp",
+    ],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)

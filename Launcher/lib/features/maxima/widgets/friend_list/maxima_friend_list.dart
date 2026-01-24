@@ -1,0 +1,152 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kyber_launcher/core/config/colors.dart';
+import 'package:kyber_launcher/features/maxima/providers/maxima_rtm_cubit.dart';
+import 'package:kyber_launcher/gen/assets.gen.dart';
+import 'package:kyber_launcher/gen/fonts.gen.dart';
+import 'package:kyber_launcher/gen/rust/api/maxima.dart';
+import 'package:kyber_launcher/shared/ui/utils/button_builder.dart';
+
+class MaximaFriendList extends StatefulWidget {
+  const MaximaFriendList({super.key});
+
+  @override
+  State<MaximaFriendList> createState() => _MaximaFriendListState();
+}
+
+class _MaximaFriendListState extends State<MaximaFriendList> {
+  int hoveredIndex = -1;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MaximaRtmCubit, MaximaRtmState>(
+      builder: (context, state) {
+        final friends = state.getSortedPlayers();
+        return ListView.separated(
+          padding: EdgeInsets.zero,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return const SizedBox.shrink();
+            }
+
+            return ButtonBuilder(
+              onClick: () {},
+              onDoubleClick: () {},
+              builder: (context, hovered) {
+                final friend = friends[index - 1];
+                final presence = state.presences[friend.id];
+                var isOnline = false;
+                if (presence != null &&
+                    presence.basic != BasicPresence.offline) {
+                  isOnline = true;
+                }
+
+                var text = 'Offline';
+                if (isOnline) {
+                  if (presence!.status.isEmpty) {
+                    text = 'Online';
+                  } else {
+                    text = 'Playing ${presence.status}';
+                  }
+                }
+
+                return MouseRegion(
+                  onEnter: (_) {
+                    setState(() => hoveredIndex = index);
+                  },
+                  onExit: (_) {
+                    setState(() => hoveredIndex = -1);
+                  },
+                  cursor: SystemMouseCursors.basic,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ).copyWith(left: 15),
+                    child: Row(
+                      children: [
+                        if (friend.avatar != null)
+                          CachedNetworkImage(
+                            imageUrl: friend.avatar!.medium.path,
+                            height: 45,
+                            width: 45,
+                            fadeInDuration: const Duration(
+                              milliseconds: 150,
+                            ),
+                            fadeInCurve: Curves.easeOut,
+                          ),
+                        if (friend.avatar == null)
+                          Assets.images.usericonTmp.image(
+                            height: 45,
+                            width: 45,
+                          ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              friend.displayName,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(
+                                  !isOnline ? .5 : 1,
+                                ),
+                                fontFamily: FontFamily.battlefrontUI,
+                                fontSize: 18,
+                                height: 1,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            const Divider(
+                              size: 8,
+                              style: DividerThemeData(
+                                thickness: .5,
+                                horizontalMargin: EdgeInsets.zero,
+                                verticalMargin: EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: decoColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              text,
+                              style: TextStyle(
+                                fontFamily: FontFamily.battlefrontUI,
+                                fontSize: 15,
+                                color: kWhiteColor.withOpacity(
+                                  !isOnline ? .25 : 1,
+                                ),
+                                height: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+          separatorBuilder: (context, index) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              height: 1,
+              color: hoveredIndex == index || hoveredIndex == index + 1
+                  ? kActiveColor
+                  : decoColor,
+            );
+          },
+          itemCount: friends.length + 1,
+        );
+      },
+    );
+  }
+}

@@ -1,0 +1,16 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+  exclude: [ lib/**.g.dart, lib/**.freezed.dart, lib/gen, lib/shared/util/vivox_service.dart ]
+
+
+linter:
+  plugins:
+    - custom_lint
+  rules:
+    lines_longer_than_80_chars: true
+    public_member_api_docs: false
+    sort_pub_dependencies: true
+

@@ -1,0 +1,14 @@
+const Set<(String, Object)> filterModes = {
+  ('Supremacy', 'Mode1'),
+  ('HvV', 'HeroesVersusVillains'),
+  ('Galactic Assault', 'PlanetaryBattles'),
+  ('CO-OP', ('ModeDefend', 'Mode9')),
+  ('Ewok Hunt', 'Mode3'),
+  ('Jetpack Cargo', 'ModeC'),
+  ('Blast', 'Blast'),
+  ('Starfighter Assault', 'SpaceBattle'),
+  ('Hero Starfighters', 'Mode7'),
+  ('Strike', 'PlanetaryMissions'),
+  ('Extraction', 'Mode5'),
+  ('Hero Showdown', 'Mode6'),
+};

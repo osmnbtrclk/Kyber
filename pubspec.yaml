@@ -1,0 +1,65 @@
+name: kyber_mono
+publish_to: none
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+workspace:
+  - Launcher
+  #- CLI
+  - Packages/kyber
+  - Packages/kyber_collection
+  - Packages/nexus_gql
+  - Packages/nexus_bridge
+
+dev_dependencies:
+  melos: ^7.1.1
+
+melos:
+  repository: https://github.com/ArmchairDevelopers/KyberV2
+  ignore:
+    - 'API'
+    - 'Module'
+    - 'Proxy'
+    - 'ThirdParty'
+  scripts:
+    analyze:
+      exec: dart analyze .
+    generate:
+      run: melos exec --ignore=kyber_cli --depends-on=build_runner -- "dart run build_runner build --enable-experiment=dot-shorthands -d"
+    generate_index:
+      run: melos exec --scope="kyber_launcher" flutter pub global run index_generator
+    generate_gql:
+      run: melos exec --scope="nexus_gql" "get-graphql-schema https://api.nexusmods.com/v2/graphql > lib/schema.graphql"
+    generate_gql_client:
+      run: melos exec --scope="nexus_gql" --depends-on=build_runner "dart run build_runner build -d"
+    generate_frb:
+      run: melos exec --scope="kyber_launcher,kyber_cli" flutter_rust_bridge_codegen generate
+    generate_proto:
+      run: protoc --proto_path=Module --dart_out=grpc:Packages/kyber/lib/gen ./Module/Proto/kyber_common.proto ./Module/Proto/kyber_api.proto ./Module/Proto/kyber_interface.proto ./Module/Proto/mod_bridge.proto
+    generate_frb_launcher:
+      run: melos exec --scope="kyber_launcher" flutter_rust_bridge_codegen generate
+    build_launcher:
+      run: melos exec --scope="kyber_launcher" flutter build windows
+    update_modules:
+      run: git submodule update --recursive --remote
+    build_cli:
+      steps:
+        - melos exec --scope="kyber_cli" dart --enable-experiment=native-assets build "bin/kyber_cli.dart"
+        #- cp CLI\.cache\maxima-service.exe CLI\bin\kyber_cli\maxima-service.exe
+        #- cp CLI\.cache\maxima-bootstrap.exe CLI\bin\kyber_cli\maxima-bootstrap.exe
+        - copy CLI\.cache\maxima-service.exe CLI\bin\kyber_cli\maxima-service.exe
+        - copy CLI\.cache\maxima-bootstrap.exe CLI\bin\kyber_cli\maxima-bootstrap.exe
+        - copy CLI\rust\target\release\rust_lib.dll CLI\bin\kyber_cli\rust_lib.dll
+    install_deps:
+      steps:
+        - mkdir "./Packages/kyber/lib/gen"
+        - mkdir "./Launcher/lib/gen/rust"
+        - mkdir "./CLI/lib/src/gen"
+        - dart pub global activate protoc_plugin 25.0.0
+        - cargo install flutter_rust_bridge_codegen
+        - flutter pub global activate index_generator
+
+  command:
+    bootstrap:
+      hooks:
+        post: melos run install_deps && melos generate_frb_launcher && melos run generate && melos run generate_proto

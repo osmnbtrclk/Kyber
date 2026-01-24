@@ -1,5 +1,5 @@
-.vscode
-.idea
-build
-cmake-build-debug
-cmake-build-release
+Packages/kyber/lib/gen
+CLI/lib/src/version.dart
+
+pubspec.lock
+pubspec_overrides.yaml

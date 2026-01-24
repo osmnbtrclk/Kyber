@@ -1,0 +1,13 @@
+// Copyright Armchair Developers / Sean Kahler. Licensed under GPLv3.
+
+#pragma once
+
+#define KYBER_VERSION_MAJOR 2
+#define KYBER_VERSION_MINOR 0
+#define KYBER_VERSION_PATCH 0
+#define KYBER_SUFFIX "-beta8"
+
+#define KB_STRINGIFY2(x) #x
+#define KB_STRINGIFY(x) KB_STRINGIFY2(x)
+
+#define KYBER_VERSION KB_STRINGIFY(KYBER_VERSION_MAJOR) "." KB_STRINGIFY(KYBER_VERSION_MINOR) "." KB_STRINGIFY(KYBER_VERSION_PATCH) KYBER_SUFFIX

@@ -1,0 +1,18 @@
+cc_library(
+    name = "FBRuntimeTweaker",
+    srcs = glob([
+        "FBRuntimeTweaker/source/*.c",
+    ], exclude = [
+        "FBRuntimeTweaker/source/entry_point.c",
+        "FBRuntimeTweaker/source/hook_man.c",
+    ]),
+    hdrs = glob([
+        "FBRuntimeTweaker/include/*.h",
+    ]),
+    includes = ["FBRuntimeTweaker/include"],
+    local_defines = ["WIN32"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@zstd//:zstd",
+    ],
+)

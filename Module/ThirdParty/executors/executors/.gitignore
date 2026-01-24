@@ -1,0 +1,36 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Autoconf / Automake collateral
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+compile
+config.guess
+config.log
+config.status
+config.sub
+configure
+depcomp
+install-sh
+missing
+test-driver
+*.gz
+*.bz2
+*.zip
+.deps
+
+# Debugging files
+*.dSYM

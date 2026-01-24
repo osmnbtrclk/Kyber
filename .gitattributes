@@ -1,1 +1,3 @@
-*.h linguist-language=C++
+ThirdParty/** linguist-vendored
+Module/ThirdParty/** linguist-vendored
+CLI/ThirdParty/** linguist-vendored

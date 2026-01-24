@@ -1,0 +1,205 @@
+name: Build CLI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch: { }
+  push:
+    paths:
+      - '.github/workflows/build-cli.yaml'
+      - 'CLI/**/*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    env:
+      working-directory: ./CLI
+
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-version: [ nightly ]
+        os: [ windows-latest-l, Linux ]
+        experimental: [ false ]
+
+    steps:
+      - name: Set SSH Key
+        env:
+          ssh_key: ${{secrets.ssh_key}}
+        if: env.ssh_key != null
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{secrets.ssh_key}}
+
+      - name: Get branch names
+        id: branch-names
+        uses: tj-actions/branch-names@v8
+
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          submodules: true
+
+      - name: Set up compiler
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update -y && sudo apt install -y build-essential libssl-dev pkg-config zip
+
+      - name: Cache Rust ${{ matrix.rust-version }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}\rust\.rustup
+          key: rust-${{ matrix.rust-version }}-${{ hashFiles('**/rust-toolchain') }}
+
+      - name: Setup Rust ${{ matrix.rust-version }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./CLI/rust -> target"
+          shared-key: ${{ runner.os}}-rust-deps
+          cache-on-failure: true
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: beta
+
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: ${{env.working-directory}}
+
+      - name: Upgrade Dependencies
+        run: flutter pub upgrade
+        working-directory: ${{env.working-directory}}
+
+      - name: Install FRB-Codegen
+        run: cargo install flutter_rust_bridge_codegen@^2.11.0
+        working-directory: ${{env.working-directory}}
+
+      - name: Create gen folder
+        if: runner.os == 'Windows'
+        run: mkdir lib\gen
+        working-directory: ${{env.working-directory}}
+
+      - name: Create gen folder
+        if: runner.os == 'Linux'
+        run: mkdir lib/gen
+        working-directory: ${{env.working-directory}}
+
+      - name: Generate Files
+        run: flutter_rust_bridge_codegen generate
+        working-directory: ${{env.working-directory}}
+
+      - name: Build rust library
+        working-directory: ./CLI/rust
+        run: cargo build --release
+
+      - name: Generate proto bindings
+        run: |
+          dart pub global activate protoc_plugin 25.0.0
+          mkdir ./Packages/kyber/lib/gen
+          protoc --proto_path=Module --dart_out=grpc:Packages/kyber/lib/gen ./Module/Proto/kyber_common.proto ./Module/Proto/kyber_api.proto ./Module/Proto/kyber_interface.proto
+
+      - name: Run generator (Kyber Collection)
+        working-directory: ./Packages/kyber_collection
+        run: dart run build_runner build
+
+      - name: Run generator
+        run: dart run build_runner build
+        working-directory: ${{env.working-directory}}
+
+      - name: Install Dependencies
+        run: flutter pub upgrade
+        working-directory: ${{env.working-directory}}
+
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: ${{env.working-directory}}
+
+      - name: Build CLI
+        run: dart build cli bin/kyber_cli.dart
+        working-directory: ${{env.working-directory}}
+
+      - name: Download Maxima Wine Helper
+        id: maxima-wine
+        if: runner.os == 'Linux'
+        working-directory: ${{env.working-directory}}
+        run: |
+          curl -fSsv -L https://s3.kyber.gg/artifacts/github-ci/wine-helper.exe --output build/cli/linux_x64/bundle/bin/wine-helper.exe
+
+      - name: Download Maxima
+        if: runner.os == 'Windows'
+        run: |
+          New-Item -Path _work -ItemType Directory
+          Invoke-WebRequest https://s3.kyber.gg/artifacts/maxima-win64.zip -OutFile maxima.zip
+          Expand-Archive maxima.zip -DestinationPath _work
+        shell: powershell
+
+      - name: Download Maxima
+        if: runner.os == 'Linux'
+        run: |
+          mkdir _work
+          curl -sL https://s3.kyber.gg/artifacts/maxima-linux64.zip -o maxima.zip
+          unzip maxima.zip -d _work
+          ls -l _work
+
+      - name: Copy Maxima
+        if: runner.os == 'Windows'
+        run: |
+          cp "_work/maxima-service.exe" "CLI/build/cli/windows_x64/bundle/bin/maxima-service.exe"
+          cp "_work/maxima-bootstrap.exe" "CLI/build/cli/windows_x64/bundle/bin/maxima-bootstrap.exe"
+
+      - name: Copy Maxima
+        if: runner.os == 'Linux'
+        run: |
+          cp "_work/maxima-bootstrap" "CLI/build/cli/linux_x64/bundle/bin/maxima-bootstrap"
+
+      - name: Copy generated library to release
+        if: runner.os == 'Windows'
+        run: cp "build/cli/windows_x64/bundle/lib/rust_lib.dll" "build/cli/windows_x64/bundle/bin/rust_lib.dll"
+        working-directory: ${{env.working-directory}}
+
+      - name: Copy generated library to release
+        if: runner.os == 'Linux'
+        run: cp "build/cli/linux_x64/bundle/lib/librust_lib.so" "build/cli/linux_x64/bundle/bin/librust_lib.so"
+        working-directory: ${{env.working-directory}}
+
+      - name: Zip files
+        if: runner.os == 'Windows'
+        run: |
+          Compress-Archive -Path "CLI/build/cli/windows_x64/bundle/bin/*" -DestinationPath kyber-cli.zip
+        shell: powershell
+
+      - name: Zip files
+        if: runner.os == 'Linux'
+        run: |
+          zip -j -r kyber-cli.zip "CLI/build/cli/linux_x64/bundle/bin"
+
+      - name: Upload artifacts
+        if: runner.os == 'Windows'
+        run: |
+          Invoke-WebRequest https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile C:\mc.exe
+          C:\mc.exe alias set kyber https://s3.kyber.gg ${{ secrets.AWS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          C:\mc.exe cp kyber-cli.zip kyber/releases/${{ steps.branch-names.outputs.current_branch }}/kyber-cli-win64.zip
+        shell: powershell
+
+      - name: Upload artifacts
+        if: runner.os == 'Linux'
+        run: |
+          curl -sL https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          chmod +x mc
+          ./mc alias set kyber https://s3.kyber.gg ${{ secrets.AWS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ./mc cp kyber-cli.zip kyber/releases/${{ steps.branch-names.outputs.current_branch }}/kyber-cli-linux64.zip

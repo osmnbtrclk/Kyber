@@ -1,0 +1,17 @@
+cc_library(
+    name = "imgui",
+    srcs = glob([
+        "imgui/*.cpp",
+    ]) + [
+        "imgui/backends/imgui_impl_dx11.cpp",
+        "imgui/backends/imgui_impl_win32.cpp",
+    ],
+    hdrs = glob([
+        "imgui/*.h",
+    ]) + [
+        "imgui/backends/imgui_impl_dx11.h",
+        "imgui/backends/imgui_impl_win32.h",
+    ],
+    includes = ["imgui"],
+    visibility = ["//visibility:public"],
+)

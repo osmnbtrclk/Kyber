@@ -1,0 +1,33 @@
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "lua_includes",
+    hdrs = [
+        "lua/lauxlib.h",
+        "lua/lua.h",
+        "lua/luaconf.h",
+        "lua/lualib.h",
+    ],
+    includes = ["lua"],
+)
+
+cc_library(
+    name = "lua",
+    srcs = [
+        # Core language
+        "lua/onelua.c",
+    ],
+    # hdrs = [
+    #     "lua/lauxlib.h",
+    #     "lua/lua.h",
+    #     "lua/luaconf.h",
+    #     "lua/lualib.h",
+    # ],
+    #copts = ["-w"],
+    #defines = ["LUA_USE_LINUX"],
+    includes = ["lua"],
+    # linkopts = [
+    #     "-lm",
+    #     "-ldl",
+    # ],
+)

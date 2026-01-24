@@ -1,0 +1,55 @@
+name: Build Proxy
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch: { }
+  push:
+    paths:
+      - '.github/workflows/build-proxy.yaml'
+      - 'Proxy/**/*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    env:
+      working-directory: ./Proxy
+
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-version: [ nightly ]
+        os: [ ubuntu-latest ]
+        experimental: [ false ]
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          submodules: true
+
+      - name: Log in to docker
+        working-directory: ${{env.working-directory}}
+        run: docker login ${{ secrets.DOCKER_REGISTRY_HOST }} -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Build Proxy
+        working-directory: ${{env.working-directory}}
+        run: |
+          docker build --build-context base=../ . -t ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_proxy:${{ github.sha }}
+
+      - name: Push Proxy
+        working-directory: ${{env.working-directory}}
+        run: |
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_proxy:${{ github.sha }}
+
+      - name: Push Proxy as latest
+        if: github.ref == 'refs/heads/stable'
+        working-directory: ${{env.working-directory}}
+        run: |
+          docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_proxy:${{ github.sha }} ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_proxy:latest
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_proxy:latest

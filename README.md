@@ -1,51 +1,46 @@
-> [!WARNING]
-> This version of KYBER is not up to date. Be on the lookout for the [KYBER V2](https://uplink.kyber.gg/news/features-overview/) update, which has been under private development, with a whole host of new and improved features.
-
-<h1 align="center"><img src="https://kyber.gg/logo2.svg" width="30rem"> Kyber</h1>
-
-<h4 align="center">Kyber is an Open-Source Private Server tool for STAR WARS™ Battlefront™ II (2017).</h4>
-<br>
+<h1 align="center"><img src="https://s3.kyber.gg/frontend-assets/images/kb-github-readme-header.png" width="500rem">
+<h4 align="center">KYBER is an Open-Source Private Server tool for STAR WARS™ Battlefront™ II (2017).</h4>
 <p align="center">
-  <a href="https://twitter.com/BattleDashBR"><img src="https://img.shields.io/badge/Twitter-@BattleDashBR-1da1f2.svg?logo=twitter"></a>
-  <a href="https://discord.gg/kyber">
-      <img src="https://img.shields.io/discord/305338604316655616.svg?label=Discord&logo=discord&color=778cd4">
-  </a>
-  
+  <a href="https://x.com/KyberServers"><img src="https://img.shields.io/badge/Twitter-@KyberServers-1da1f2.svg?logo=twitter"></a>
+  <a href="https://discord.gg/kyber"><img src="https://img.shields.io/discord/305338604316655616.svg?label=Discord&logo=discord&color=778cd4"></a>
+  <a href="https://kyber.gg"><img src="https://img.shields.io/badge/Website-kyber.gg-orange"></a>
 </p>
 
 ------
 
-A hosted version of Kyber is available at [kyber.gg](https://kyber.gg), where I operate proxies for server data that alleviate the issue of port forwarding and IP security.
+## Development
 
-What's done:
-* Server starting
-* Networking
-* Direct proxy support
-* NAT Punch-Through system
-* In-Game server browser
-* Per-player team swapping
-* Player kicking/moderation
-* Optimal proxy detection
+KYBER is developed using a monorepo structure and contains multiple projects and shared packages.
 
-What isn't done:
-* Built-in mod verification (currently handled at the proxy level, meaning it's unavailable if you direct-connect)
-* Kick messages (currently if you are kicked by the server admin you just get sent back to the menu with no indication of why)
-* UX/UI Styling (WIP)
-* Player banning
-* Database handling at the proxy level
+| Directory | Description                                   |
+|-----------|-----------------------------------------------|
+| `Module` | C++ game module injected into the game client |
+| `Launcher` | Launcher application           |
+| `Proxy` | Server proxy                                  |
+| `API` | API service                                   |
+| `CLI` | Command-line interface tools                  |
+| `Packages` | Shared Dart packages                          |
 
-If you want to use Kyber purely without a proxy (port forwarding and having people connect to your IP), the rewrite (this) is completely usable for that, feel free to build Kyber and inject it with the new launcher (/Launcher, will need a few modifications to run your own dll).
+## Building
 
-**Stars and PRs are welcome!**
+See [BUILDING.md](BUILDING.md) for build instructions.
 
-## Credits
+## Contributing
 
-Kyber utilizes the following open-source projects:
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-- [MinHook](https://github.com/TsudaKageyu/minhook)
-- [ImGUI](https://github.com/ocornut/imgui)
-- [GLFW](https://glfw.org)
-- [cpp-httplib](https://github.com/yhirose/cpp-httplib)
-- [openssl](https://openssl.org)
-- [executors](https://github.com/chriskohlhoff/executors)
-- [nlohmann-json](https://github.com/nlohmann/json)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Maintainers
+
+- [Liam](https://github.com/7reax): API, CLI, Launcher, Proxy
+- [Magix](https://github.com/MagixGames): Module
+
+## Contributors
+<a href="https://github.com/ArmchairDevelopers/Kyber/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ArmchairDevelopers/Kyber" />
+</a>
+
+## License
+
+[GPL-3.0](LICENSE)

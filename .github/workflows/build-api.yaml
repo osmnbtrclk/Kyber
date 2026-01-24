@@ -1,0 +1,52 @@
+name: Build API
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch: { }
+  push:
+    paths:
+      - '.github/workflows/build-api.yaml'
+      - 'API/**/*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    env:
+      working-directory: ./API
+
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-version: [ nightly ]
+        os: [ Linux ]
+        experimental: [ false ]
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to docker
+        working-directory: ${{env.working-directory}}
+        run: docker login ${{ secrets.DOCKER_REGISTRY_HOST }} -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Build API
+        working-directory: ${{env.working-directory}}
+        run: |
+          docker build --build-context base=../ . -t ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:${{ github.sha }}
+
+      - name: Push API
+        working-directory: ${{env.working-directory}}
+        run: |
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:${{ github.sha }}
+
+      - name: Push API as latest
+        if: github.ref == 'refs/heads/stable'
+        working-directory: ${{env.working-directory}}
+        run: |
+          docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:${{ github.sha }} ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:latest
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:latest

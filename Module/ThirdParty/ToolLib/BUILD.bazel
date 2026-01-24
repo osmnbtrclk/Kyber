@@ -1,0 +1,14 @@
+cc_library(
+    name = "ToolLib",
+    srcs = glob(["Source/*.cpp"]),
+    hdrs = glob(["Public/ToolLib/*.h"]),
+    includes = [
+        "Public",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//ThirdParty/ToolLib/ThirdParty/imgui",
+        "//ThirdParty/ToolLib/ThirdParty/minhook",
+        "//ThirdParty/ToolLib/ThirdParty/spdlog",
+    ],
+)

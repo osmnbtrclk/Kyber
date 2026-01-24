@@ -1,0 +1,365 @@
+query modsByUid(
+    $uids: [ID!]!,
+    $offset: Int,
+    $count: Int
+) {
+    modsByUid(
+        uids: $uids,
+        offset: $offset,
+        count: $count
+    ) {
+        facets {
+            count
+        }
+        nodes {
+            id
+            modId
+            name
+            description
+            uploader {
+                memberId
+                name
+                recognizedAuthor
+            }
+            author
+            downloads
+            endorsements
+            pictureUrl
+        }
+        nodesCount
+        nodesFacets {
+            count
+        }
+        nodesFilter
+        totalCount
+    }
+}
+
+query searchMods(
+    $query: String!,
+    $sort: ModsSort!,
+    $timeFilter: [BaseFilterValue!],
+) {
+    mods(
+        filter: {
+            name: {
+                value: $query,
+                op: WILDCARD
+            },
+            gameId: {value: "2229"},
+            adultContent: {value: false},
+            updatedAt: $timeFilter,
+        },
+        sort: [$sort],
+    ) {
+        nodes {
+            uid
+            name
+            author
+            uploader {
+                name
+                avatar
+                memberId
+            }
+            summary
+            modId
+            pictureUrl
+            id
+            downloads
+            fileSize
+            thumbnailUrl
+        }
+    }
+}
+
+query modFiles(
+    $modId: ID!,
+    $gameId: ID!
+) {
+    modFiles(
+        modId: $modId,
+        gameId: $gameId
+    ) {
+        categoryId
+        changelogText
+        count
+        date
+        description
+        fileId
+        id
+        manager
+        modId
+        name
+        owner {
+            name
+            avatar
+        }
+        primary
+        requirementsAlert
+        scanned
+        size
+        sizeInBytes
+        totalDownloads
+        uCount
+        uid
+        uniqueDownloads
+        uri
+        version
+    }
+}
+
+query modFiles(
+    $modId: ID!,
+) {
+    modFiles(gameId: 2229, modId: $modId) {
+        fileId
+        description
+        name
+        id
+        primary
+        sizeInBytes
+        totalDownloads
+        uri
+        size
+        modId
+        version
+        uCount
+        uniqueDownloads
+        date
+        category
+        categoryId
+        scanned
+        changelogText
+        count
+        manager
+        owner {
+            name
+            avatar
+        }
+        requirementsAlert
+        uid
+    }
+}
+
+query modsByCategory(
+    $categoryName: [String!],
+    $offset: Int,
+    $sort: ModsSort!,
+    $perPage: Int!,
+    $timeFilter: [BaseFilterValue!],
+) {
+    mods(
+        filter: {
+            gameId: {value: "2229"},
+            updatedAt: $timeFilter,
+            adultContent: {value: false}
+        },
+        facets: {
+            categoryName: $categoryName
+        },
+        count: $perPage,
+        offset: $offset,
+        sort: [$sort],
+        # postFilter: {
+        #     author: [
+        #         {
+        #             op: NOT_EQUALS,
+        #             value: "null"
+        #         }
+        #     ],
+        # }
+    ) {
+        totalCount
+        nodes {
+            name,
+            summary,
+            downloads,
+            author,
+            id,
+            uid,
+            modId,
+            uploader {
+                name,
+                avatar
+            },
+            thumbnailUrl,
+            pictureUrl,
+            fileSize
+        }
+    }
+}
+
+query modsByUID(
+    $ids: [CompositeIdInput!]!,
+) {
+    legacyMods(
+        ids: $ids,
+    ) {
+        nodes {
+            uid,
+            pictureUrl,
+            thumbnailUrl,
+            name,
+            modId,
+            uploader {
+                name,
+                avatar,
+                memberId
+            },
+            downloads,
+            endorsements,
+            summary
+            author,
+            fileSize,
+            viewerEndorsed
+            viewerTracked
+            createdAt
+            updatedAt
+        }
+    }
+}
+
+query modByUID(
+    $uid: Int!,
+) {
+    legacyMods(
+        ids: [{gameId: 2229, modId: $uid}],
+        count: 1,
+    ) {
+        nodes {
+            uid,
+            pictureUrl,
+            thumbnailUrl,
+            name,
+            modId,
+            uploader {
+                name,
+                avatar,
+                memberId
+                recognizedAuthor
+            },
+            downloads,
+            endorsements,
+            description,
+            author,
+            fileSize,
+            viewerEndorsed
+            viewerTracked
+            createdAt
+            updatedAt
+        }
+    }
+}
+
+mutation endorseMod(
+    $modUid: String!,
+) {
+    createModEndorsement(modUid: $modUid) {
+        success
+    }
+}
+
+mutation abstainFromModEndorsement(
+    $modUid: String!
+) {
+    abstainFromModEndorsement(modUid: $modUid) {
+        success
+    }
+}
+
+query modsByUser(
+    $uploaderId: String!,
+    $offset: Int,
+) {
+    mods(
+        filter: {
+            uploaderId: {
+                value: $uploaderId
+            },
+            gameId: {
+                value: "2229"
+            },
+            adultContent: {value: false}
+        },
+        offset: $offset,
+        count: 15,
+    ) {
+        totalCount
+        nodes {
+            name
+            author
+            downloads
+            endorsements
+            summary
+            thumbnailUrl
+            modId
+            uid
+            pictureUrl
+            fileSize
+        }
+    }
+}
+
+query userById(
+    $id: Int!,
+    $uploaderId: String!
+) {
+    user(id: $id) {
+        about
+        avatar
+        modCount
+        isBlocked
+        isTracked
+        joined
+        memberId
+        membershipRoles
+        roles
+        posts
+        name
+        uniqueModDownloads
+        kudos
+        contributedModCount
+        showLastActive
+        country
+        recognizedAuthor
+        donationsEnabled
+        views
+    }
+    mods(
+        filter: {
+            uploaderId: {
+                value: $uploaderId,
+            },
+            gameId: {value: "2229"},
+            adultContent: {value: false}
+        }
+    ) {
+        totalCount
+        nodes {
+            name
+            createdAt
+            id
+            uid
+            modId
+            summary
+            updatedAt
+            name
+            author
+            game {
+                name
+                id
+            }
+            modCategory {
+                name
+                id
+            }
+            modId
+            downloads
+            endorsements
+            fileSize
+            pictureUrl
+            thumbnailUrl
+            version
+        }
+    }
+}

@@ -1,0 +1,11 @@
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "zip",
+    srcs = [
+        "zip/src/miniz.h",
+        "zip/src/zip.c",
+        "zip/src/zip.h",
+    ],
+    includes = ["zip/src"],
+)

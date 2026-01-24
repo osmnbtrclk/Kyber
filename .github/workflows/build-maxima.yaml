@@ -1,0 +1,95 @@
+name: Build Maxima
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch: { }
+  push:
+    paths:
+      - 'ThirdParty/Maxima'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-version: [ nightly ]
+        os: [ windows-latest-l, ubuntu-latest ]
+        experimental: [ false ]
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          submodules: true
+
+      - name: Cache Rust ${{ matrix.rust-version }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}\rust\.rustup
+          key: rust-${{ matrix.rust-version }}-${{ hashFiles('**/rust-toolchain') }}
+
+      - name: Setup Rust ${{ matrix.rust-version }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "rust -> target"
+          shared-key: ${{ runner.os}}-rust-deps
+          cache-on-failure: true
+          #save-if: ${{ github.ref == 'refs/heads/master' }}
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Build Maxima Bootstrap
+        working-directory: ./ThirdParty/Maxima
+        run: |
+          cargo build -p maxima-bootstrap --release
+
+      - name: Build Maxima Service
+        if: runner.os == 'Windows'
+        working-directory: ./ThirdParty/Maxima
+        run: |
+          cargo build -p maxima-service --release
+
+      - name: Zip files
+        if: runner.os == 'Windows'
+        working-directory: ./ThirdParty/Maxima/target/release
+        run: |
+          Compress-Archive -Path maxima-bootstrap.exe, maxima-service.exe -DestinationPath maxima.zip
+        shell: powershell
+
+      - name: Zip files
+        if: runner.os == 'Linux'
+        working-directory: ./ThirdParty/Maxima/target/release
+        run: |
+          zip maxima.zip maxima-bootstrap
+
+      - name: Upload artifacts
+        if: runner.os == 'Windows'
+        working-directory: ./ThirdParty/Maxima/target/release
+        run: |
+          Invoke-WebRequest https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile C:\mc.exe
+          C:\mc.exe alias set kyber https://s3.kyber.gg ${{ secrets.AWS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          C:\mc.exe cp maxima.zip kyber/artifacts/maxima-win64.zip
+        shell: powershell
+
+      - name: Upload artifacts
+        if: runner.os == 'Linux'
+        working-directory: ./ThirdParty/Maxima/target/release
+        run: |
+          wget -q https://dl.min.io/client/mc/release/linux-amd64/mc -O mc
+          chmod +x mc
+          ./mc alias set kyber https://s3.kyber.gg ${{ secrets.AWS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ./mc cp maxima.zip kyber/artifacts/maxima-linux64.zip

@@ -1,0 +1,13 @@
+cc_library(
+    name = "vivox",
+    srcs = [
+        "SDK/Libraries/Release/x64/vivoxsdk.lib",
+        "vxplatform/vxplatform_win32.cpp",
+    ],
+    hdrs = glob([
+        "SDK/include/*.h",
+        "vxplatform/*.h",
+    ]),
+    includes = ["SDK/include", "vxplatform", "."],
+    visibility = ["//visibility:public"],
+)

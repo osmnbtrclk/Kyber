@@ -1,0 +1,20 @@
+cc_library(
+    name = "EASTL",
+    srcs = glob([
+        "EASTL/source/*.cpp",
+    ]) + [
+        "//ThirdParty/EASTL/EASTLArena:srcs",
+    ],
+    hdrs = glob([
+        "EASTL/include/EASTL/*.h",
+    ]),
+    defines = [
+        "EASTL_USER_CONFIG_HEADER=\\\"EASTLArena/EASTLConfig.h\\\"",
+    ],
+    includes = ["EASTL/include"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//ThirdParty/EABase",
+        "//ThirdParty/EASTL/EASTLArena",
+    ],
+)

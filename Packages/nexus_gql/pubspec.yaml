@@ -1,0 +1,18 @@
+name: nexus_gql
+description: Nexus GraphQL Client
+version: 0.1.0+1
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+
+dev_dependencies:
+  very_good_analysis: ^10.0.0
+  graphql_codegen: ^3.0.0
+  build_runner: ^2.10.2
+
+dependency_overrides:
+  graphql: ^5.2.2
+  graphql_flutter: ^5.2.1
+  build: '>=4.0.0'

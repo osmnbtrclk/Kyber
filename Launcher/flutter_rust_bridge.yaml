@@ -1,0 +1,5 @@
+rust_input: crate::api
+dart_output: lib/gen/rust
+dart_entrypoint_class_name: "MaximaLib"
+web: false
+enable_lifetime: true

@@ -1,0 +1,2 @@
+module(name = "fb_runtime_tweaker")
+bazel_dep(name = "zstd", version = "1.5.6")
