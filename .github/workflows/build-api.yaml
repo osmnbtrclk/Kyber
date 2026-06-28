@@ -1,52 +1,27 @@
 name: Build API
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   workflow_dispatch: { }
   push:
-    paths:
-      - '.github/workflows/build-api.yaml'
-      - 'API/**/*'
-
+    paths: [ 'API/**/*', '.github/workflows/build-api.yaml' ]
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    env:
-      working-directory: ./API
-
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      fail-fast: false
-      matrix:
-        rust-version: [ nightly ]
-        os: [ ubuntu-latest-m ]
-        experimental: [ false ]
-
+    runs-on: windows-latest
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
-
-      - name: Log in to docker
-        working-directory: ${{env.working-directory}}
-        run: docker login ${{ secrets.DOCKER_REGISTRY_HOST }} -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
-
-      - name: Build API
-        working-directory: ${{env.working-directory}}
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+      - uses: arduino/setup-protoc@v3
+      - name: Build
+        working-directory: ./API
         run: |
-          docker build --build-context base=../ . -t ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:${{ github.sha }}
-
-      - name: Push API
-        working-directory: ${{env.working-directory}}
-        run: |
-          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:${{ github.sha }}
-
-      - name: Push API as latest
-        if: github.ref == 'refs/heads/stable'
-        working-directory: ${{env.working-directory}}
-        run: |
-          docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:${{ github.sha }} ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:latest
-          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/kyber_api:latest
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          .\scripts\gen-proto.bat
+          go build -o kyber-api.exe ./cmd/server
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kyber-api
+          path: API/kyber-api.exe
