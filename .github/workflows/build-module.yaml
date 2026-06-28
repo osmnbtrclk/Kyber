@@ -1,8 +1,6 @@
 name: Build Module
 on:
   workflow_dispatch: { }
-  push:
-    paths: [ 'Module/**/*', '.github/workflows/build-module.yaml' ]
 jobs:
   build:
     runs-on: windows-latest
@@ -18,6 +16,7 @@ jobs:
           install: gcc
           location: C:\msys64
       - name: Build
+        working-directory: ./Module
         run: |
           Invoke-WebRequest https://github.com/bazelbuild/bazelisk/releases/download/v1.25.0/bazelisk-windows-amd64.exe -OutFile C:\Windows\bazel.exe
           mkdir C:\bz
@@ -25,4 +24,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: kyber-module
-          path: bazel-bin/Kyber.dll
+          path: Module/bazel-bin/Kyber.dll

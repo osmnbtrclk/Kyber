@@ -1,8 +1,6 @@
 name: Build Launcher
 on:
   workflow_dispatch: { }
-  push:
-    paths: [ 'Launcher/**/*', '.github/workflows/build-launcher.yml' ]
 jobs:
   build:
     runs-on: windows-latest
@@ -10,10 +8,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - uses: dtolnay/rust-toolchain@nightly
       - uses: subosito/flutter-action@v2
         with:
           channel: 'master'
       - uses: arduino/setup-protoc@v3
+      - name: Bootstrap
+        run: |
+          dart pub global activate melos
+          dart pub global run melos bootstrap
       - name: Build
         working-directory: ./Launcher
         run: |

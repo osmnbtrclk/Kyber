@@ -1,8 +1,6 @@
 name: Build API
 on:
   workflow_dispatch: { }
-  push:
-    paths: [ 'API/**/*', '.github/workflows/build-api.yaml' ]
 jobs:
   build:
     runs-on: windows-latest
