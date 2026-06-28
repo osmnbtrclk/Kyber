@@ -146,7 +146,7 @@ class _ServerInfoBoxState extends State<ServerInfoBox> {
                                   onPressed: () {
                                     final uri = Uri(
                                       scheme: 'https',
-                                      host: 'api.prod.kyber.gg',
+                                      host: '192.168.1.103:9028',
                                       path: 'redirect',
                                       queryParameters: {
                                         'target':

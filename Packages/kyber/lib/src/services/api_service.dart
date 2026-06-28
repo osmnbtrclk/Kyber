@@ -6,7 +6,7 @@ const _kServicePort = 443;
 
 class KyberGRPCService {
   factory KyberGRPCService.fromDefaults() => KyberGRPCService(
-        'api-rpc.prod.kyber.gg',
+        '192.168.1.103:9027',
         _kServicePort,
         httpHostname: 'api.stage.kyber.gg',
       );

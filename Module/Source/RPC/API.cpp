@@ -72,8 +72,8 @@ API::API(std::string token)
 {
     auto credentials = grpc::SslCredentials(GetSslOptions());
 
-    std::string rpcUri = PlatformUtils::GetEnv("KYBER_API_HOSTNAME", "api-rpc.prod.kyber.gg");
-    std::string httpUri = PlatformUtils::GetEnv("KYBER_HTTP_HOSTNAME", "api.prod.kyber.gg");
+    std::string rpcUri = PlatformUtils::GetEnv("KYBER_API_HOSTNAME", "192.168.1.103:9027");
+    std::string httpUri = PlatformUtils::GetEnv("KYBER_HTTP_HOSTNAME", "192.168.1.103:9028");
     
     std::shared_ptr<Channel> channel = grpc::CreateChannel(rpcUri, credentials);
 
