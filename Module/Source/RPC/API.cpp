@@ -70,7 +70,7 @@ void ListenToStateChanges(const std::shared_ptr<grpc::Channel>& channel) {
 
 API::API(std::string token)
 {
-    std::shared_ptr<ChannelCredentials> credentials;
+    std::shared_ptr<grpc::ChannelCredentials> credentials;
     if (PlatformUtils::GetEnv("KYBER_API_INSECURE", "1") == "1")
     {
         credentials = grpc::InsecureChannelCredentials();

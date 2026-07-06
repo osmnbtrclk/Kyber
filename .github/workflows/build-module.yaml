@@ -21,7 +21,18 @@ jobs:
           Invoke-WebRequest https://github.com/bazelbuild/bazelisk/releases/download/v1.25.0/bazelisk-windows-amd64.exe -OutFile C:\Windows\bazel.exe
           mkdir C:\bz
           bazel --output_user_root="C:\bz" build --config=release Kyber
+      - name: Locate and Copy DLL
+        run: |
+          mkdir out
+          $dllPath = Get-ChildItem -Path C:\bz -Filter "Kyber.dll" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if ($dllPath) {
+              Copy-Item $dllPath -Destination out\Kyber.dll
+              Write-Host "Located and copied DLL from: $dllPath"
+          } else {
+              Write-Error "Could not find Kyber.dll in C:\bz output directory!"
+              exit 1
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: kyber-module
-          path: Module/bazel-bin/Kyber.dll
+          path: out/Kyber.dll
