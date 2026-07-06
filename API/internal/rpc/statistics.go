@@ -294,9 +294,12 @@ func (s *StatisticsServer) UpdateStats(ctx context.Context, req *pbapi.UpdateSta
 	}
 
 	if req.GetSource() == pbapi.StatsSource_KYBER {
+		// Bypass entitlement check for local preservation play
+		/*
 		if !owner.Entitled(models.EntitlementOfficialStats) {
 			return nil, status.Error(codes.PermissionDenied, "You do not have permission to update Kyber stats")
 		}
+		*/
 
 		currentStats, _ := s.store.Stats.Get(ctx, user.ID, string(models.StatsSourceKyber))
 

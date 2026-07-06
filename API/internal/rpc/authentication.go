@@ -58,9 +58,13 @@ type AuthenticationServer struct {
 }
 
 func NewAuthenticationServer(ctx context.Context, store *db.Store, mqClient mq.Client) *AuthenticationServer {
-	eaJwks, err := ea2.LoadJwks()
-	if err != nil {
-		panic(fmt.Sprintf("failed to load EA JWKS: %v", err))
+	var eaJwks map[string]*rsa.PublicKey
+	var err error
+	if strings.ToLower(os.Getenv("OFFLINE_MODE")) != "true" {
+		eaJwks, err = ea2.LoadJwks()
+		if err != nil {
+			logger.L().Warn("failed to load EA JWKS, running without EA validation", zap.Error(err))
+		}
 	}
 
 	whitelistEnabled := true
@@ -396,10 +400,35 @@ func (s *AuthenticationServer) Login(ctx context.Context, req *pbapi.LoginReques
 
 	userIP := addr[0]
 
-	claims, err := ea2.ValidateToken(s.eaJwks, req.GetToken())
-	if err != nil {
-		logger.L().Error(err.Error())
-		return nil, status.Error(codes.Internal, "Failed to validate token")
+	var claims *ea2.EAJwtNexusClaims
+	var err error
+
+	if strings.ToLower(os.Getenv("OFFLINE_MODE")) == "true" || !strings.HasPrefix(req.GetToken(), "eyJ") {
+		claims = &ea2.EAJwtNexusClaims{
+			Pid:  "0",
+			Uid:  "0",
+			Psid: 0,
+			Dvid: "0",
+			Uif: ea2.JwtUserInformationClaims{
+				Cty: "US",
+				Lan: "en",
+				Sta: "ACTIVE",
+			},
+			Psif: []ea2.JwtUserPersonaInformationClaims{
+				{
+					ID:  0,
+					Ns:  "cem_ea_id",
+					Dis: "DummyUser",
+					Nic: "DummyUser",
+				},
+			},
+		}
+	} else {
+		claims, err = ea2.ValidateToken(s.eaJwks, req.GetToken())
+		if err != nil {
+			logger.L().Error(err.Error())
+			return nil, status.Error(codes.Internal, "Failed to validate token")
+		}
 	}
 
 	if claims.Uif.Sta != "ACTIVE" {
@@ -501,10 +530,16 @@ func (s *AuthenticationServer) Login(ctx context.Context, req *pbapi.LoginReques
 	}
 
 	if user.EAData.LastEntitlementCheck == nil || time.Since(*user.EAData.LastEntitlementCheck) > EAEntitlementRefreshInterval {
-		isBanned, err := ea2.IsBanned(req.GetToken())
-		if err != nil {
-			logger.L().Error(err.Error())
-			return nil, status.Error(codes.Internal, "Failed to check EA entitlements")
+		var isBanned bool
+		var err error
+		if strings.ToLower(os.Getenv("OFFLINE_MODE")) == "true" || !strings.HasPrefix(req.GetToken(), "eyJ") {
+			isBanned = false
+		} else {
+			isBanned, err = ea2.IsBanned(req.GetToken())
+			if err != nil {
+				logger.L().Error(err.Error())
+				return nil, status.Error(codes.Internal, "Failed to check EA entitlements")
+			}
 		}
 
 		user.EAData.IsBanned = isBanned

@@ -70,7 +70,15 @@ void ListenToStateChanges(const std::shared_ptr<grpc::Channel>& channel) {
 
 API::API(std::string token)
 {
-    auto credentials = grpc::SslCredentials(GetSslOptions());
+    std::shared_ptr<ChannelCredentials> credentials;
+    if (PlatformUtils::GetEnv("KYBER_API_INSECURE", "1") == "1")
+    {
+        credentials = grpc::InsecureChannelCredentials();
+    }
+    else
+    {
+        credentials = grpc::SslCredentials(GetSslOptions());
+    }
 
     std::string rpcUri = PlatformUtils::GetEnv("KYBER_API_HOSTNAME", "192.168.1.103:9027");
     std::string httpUri = PlatformUtils::GetEnv("KYBER_HTTP_HOSTNAME", "192.168.1.103:9028");

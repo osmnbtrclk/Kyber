@@ -228,6 +228,8 @@ static sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t even
 
 void Sentry::Initialize()
 {
+    KYBER_LOG(Info, "Sentry disabled for offline preservation");
+    return;
 #if defined(_DEBUG)
     KYBER_LOG(Info, "Sentry disabled in debug builds");
     return;

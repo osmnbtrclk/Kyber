@@ -8,10 +8,18 @@ import (
 )
 
 func LoadConfig(filename string, config interface{}) error {
-	path := fmt.Sprintf("/srv/kyber-api/config/%s", filename)
+	path := fmt.Sprintf("./config/%s", filename)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		path = fmt.Sprintf("./%s", filename)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			path = fmt.Sprintf("/srv/kyber-api/config/%s", filename)
+		}
+	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return err
+		// Log warning but return nil to prevent panics
+		fmt.Printf("Warning: Config file %s not found, using defaults\n", filename)
+		return nil
 	}
 
 	file, err := os.Open(path)

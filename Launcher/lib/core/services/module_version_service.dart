@@ -141,63 +141,6 @@ class ModuleVersionService {
     String? channel,
     KyberGRPCService? service,
   }) async {
-    if (Platform.isMacOS && module == VersionModule.installer) {
-      return false;
-    }
-
-    if ((kDebugMode || kProfileMode) && module == VersionModule.installer) {
-      return false;
-    }
-
-    channel ??= module.releaseChannel;
-    final rq = ServiceVersionsRequest(id: module.name, channel: channel);
-    final versions = await (service ?? sl.get<KyberGRPCService>())
-        .launcherClient
-        .versions(rq);
-
-    final currentVersion = await module.getCurrentVersion();
-    final latestVersion = versions.versions.firstWhereOrNull((x) => x.isLatest);
-    if (currentVersion == null) {
-      _logger.info('No version found for ${module.name}.');
-      return true;
-    }
-
-    if (latestVersion == null) {
-      _logger.info(
-        'No latest version found for ${module.name}. Switching to stable.',
-      );
-      await module.setReleaseChannel('stable');
-      return true;
-    }
-
-    late bool updateAvailable;
-    if (module == VersionModule.installer) {
-      final latestVersion = await getLatestLauncherVersion();
-      if (latestVersion == 'DISCONTINUED' || latestVersion == null) {
-        _logger.info(
-          'The branch ${VersionModule.installer.releaseChannel} has been discontinued. Switching to main.',
-        );
-        await VersionModule.installer.setReleaseChannel('stable');
-        return true;
-      }
-
-      updateAvailable = latestVersion != currentVersion;
-    } else {
-      updateAvailable = latestVersion.version != currentVersion;
-    }
-
-    if (updateAvailable) {
-      _logger.info(
-        'New version available for ${module.name}: ${latestVersion.version}',
-      );
-      return true;
-    }
-
-    if (module.requiredFiles.any((x) => !File(x).existsSync())) {
-      _logger.info('Required files missing for ${module.name}.');
-      return true;
-    }
-
     return false;
   }
 

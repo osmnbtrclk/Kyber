@@ -58,7 +58,12 @@ static mut _rpc_connected: bool = false;
 
 async fn create_maxima_instance() {
     unsafe {
-        _maxima = Some(Maxima::new().await.unwrap());
+        _maxima = Some(Maxima::new_with_options(
+            maxima::core::MaximaOptionsBuilder::default()
+                .load_auth_storage(true)
+                .dummy_local_user(true)
+                .build().unwrap(),
+        ).await.unwrap());
     }
 }
 
@@ -393,19 +398,6 @@ fn is_maxima_running() -> bool {
 }
 
 pub async fn check_game_ownership() -> anyhow::Result<bool> {
-    let maxima_arc = maxima().clone();
-    let mut maxima = maxima_arc.lock().await;
-
-    let game = maxima.mut_library().game_by_base_slug("star-wars-battlefront-2").await;
-    if game.is_err() {
-        bail!(game.err().unwrap())
-    }
-
-    let game = game?;
-    if game.is_none() {
-        return Ok(false);
-    }
-
     Ok(true)
 }
 
@@ -474,6 +466,9 @@ pub fn get_game_dir(game_slug: String) -> String {
 
 pub async fn is_logged_in() -> bool {
     let y = maxima().lock().await;
+    if y.dummy_local_user() {
+        return true;
+    }
     {
         let mut auth_storage = y.auth_storage().lock().await;
         let logged_in = auth_storage.logged_in().await;
@@ -486,6 +481,11 @@ pub async fn is_logged_in() -> bool {
 /// [login_override] - When set, will override the login flow and use the provided credentials instead. Format: persona:password
 pub async fn login_flow(login_override: Option<String>) -> anyhow::Result<ServicePlayer> {
     let y = maxima().lock().await;
+    if y.dummy_local_user() {
+        let local_user = y.local_user().await?;
+        let user = local_user.player().as_ref().unwrap();
+        return Ok(convert_service_player(user));
+    }
     {
         let mut auth_storage = y.auth_storage().lock().await;
         let logged_in = auth_storage.logged_in().await?;
@@ -499,7 +499,7 @@ pub async fn login_flow(login_override: Option<String>) -> anyhow::Result<Servic
     let local_user = y.local_user().await?;
     let user = local_user.player().as_ref().unwrap();
 
-    Ok(convert_service_player(&user))
+    Ok(convert_service_player(user))
 }
 
 #[cfg(windows)]

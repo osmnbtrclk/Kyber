@@ -72,6 +72,8 @@ Box<ModCollectionMetaData> collectionBox = Hive.box<ModCollectionMetaData>(
 );
 String applicationDocumentsDirectory = '';
 
+Future<void> initSentry(String currentVersion) async => {};
+/*
 Future<void> initSentry(String currentVersion) async => SentryFlutter.init(
   (options) {
     options
@@ -113,11 +115,10 @@ Future<void> initSentry(String currentVersion) async => SentryFlutter.init(
 
         return event;
       }
-      ..addIntegration(
-        LoggingIntegration(),
       );
   },
 );
+*/
 
 Future<void> loadCerts() async {
   for (final ca in Assets.ca.values) {
