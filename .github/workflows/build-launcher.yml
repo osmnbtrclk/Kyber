@@ -19,11 +19,21 @@ jobs:
         run: |
           dart pub global activate melos
           dart pub global run melos bootstrap
-      - name: Build
+      - name: Build Rust Library
+        working-directory: ./Launcher/rust
+        run: cargo build --release
+      - name: Build Launcher
         working-directory: ./Launcher
         run: |
           dart run tool/ffigen.dart
           flutter build windows
+      - name: Bundle Maxima and Rust Library
+        run: |
+          Invoke-WebRequest https://s3.kyber.gg/artifacts/maxima-win64.zip -OutFile maxima.zip
+          Expand-Archive maxima.zip -DestinationPath maxima_files -Force
+          copy maxima_files/maxima-service.exe Launcher/build/windows/x64/runner/Release/maxima-service.exe
+          copy maxima_files/maxima-bootstrap.exe Launcher/build/windows/x64/runner/Release/maxima-bootstrap.exe
+          copy Launcher/rust/target/release/rust_lib.dll Launcher/build/windows/x64/runner/Release/rust_lib.dll
       - uses: actions/upload-artifact@v4
         with:
           name: kyber-launcher
