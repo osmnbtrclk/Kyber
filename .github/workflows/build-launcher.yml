@@ -11,6 +11,11 @@ jobs:
       - name: Patch Submodules
         run: powershell -ExecutionPolicy Bypass -File .\patch-submodules.ps1
       - uses: dtolnay/rust-toolchain@nightly
+      - name: Install cargo-binstall and flutter_rust_bridge_codegen
+        run: |
+          Invoke-WebRequest https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-pc-windows-msvc.zip -OutFile binstall.zip
+          Expand-Archive binstall.zip -DestinationPath . -Force
+          ./cargo-binstall.exe -y --force flutter_rust_bridge_codegen@2.11.1
       - uses: subosito/flutter-action@v2
         with:
           channel: 'master'
