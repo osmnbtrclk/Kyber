@@ -56,7 +56,7 @@ melos:
         - mkdir "./Launcher/lib/gen/rust"
         - mkdir "./CLI/lib/src/gen"
         - dart pub global activate protoc_plugin 25.0.0
-        - powershell -Command "Invoke-WebRequest https://github.com/fzyzcjy/flutter_rust_bridge/releases/download/v2.11.1/flutter_rust_bridge_codegen-x86_64-pc-windows-msvc.zip -OutFile frb.zip; Expand-Archive frb.zip -DestinationPath . -Force; Move-Item flutter_rust_bridge_codegen.exe C:\Windows\flutter_rust_bridge_codegen.exe -Force; Remove-Item frb.zip -Force"
+        - powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install.ps1')); cargo binstall -y --force flutter_rust_bridge_codegen@2.11.1"
         - flutter pub global activate index_generator
 
   command:
