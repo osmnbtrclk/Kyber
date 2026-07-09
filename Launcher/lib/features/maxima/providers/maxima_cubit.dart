@@ -313,6 +313,7 @@ class MaximaCubit extends Cubit<MaximaState> {
         )
         ..info('Requesting Kyber auth token');
 
+      final authToken = "dummy_token";
       ProcessEnv.set('KYBER_API_TOKEN', "dummy_kyber_api_token");
 
       logger.info(
