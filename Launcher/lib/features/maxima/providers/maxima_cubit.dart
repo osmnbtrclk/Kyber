@@ -313,26 +313,20 @@ class MaximaCubit extends Cubit<MaximaState> {
         )
         ..info('Requesting Kyber auth token');
 
-      final authToken = await getAuthToken();
-      final resp = await sl.get<KyberGRPCService>().login(authToken);
-
-      final entitlements = resp.entitlements
-          .map(parseUserEntitlement)
-          .whereType<UserEntitlement>();
-      ProcessEnv.set('KYBER_API_TOKEN', resp.token);
+      ProcessEnv.set('KYBER_API_TOKEN', "dummy_kyber_api_token");
 
       logger.info(
-        'Logged in to Kyber. User has ${resp.entitlements.length} entitlements',
+        'Logged in to Kyber (Offline/Preservation Mode)',
       );
 
       emit(
         state.copyWith(
           loggedIn: true,
-          entitlements: entitlements.toList(growable: false),
+          entitlements: [],
           servicePlayer: servicePlayer,
           status: MaximaStatus.loaded,
-          isPatron: resp.isPatreon,
-          discordData: resp.hasDiscord() ? resp.discord : null,
+          isPatron: false,
+          discordData: null,
         ),
       );
 
