@@ -1,6 +1,11 @@
 name: Build Launcher
 on:
   workflow_dispatch: { }
+  push:
+    branches: [main]
+    paths:
+      - 'Launcher/**'
+      - '.github/workflows/build-launcher.yml'
 jobs:
   build:
     runs-on: windows-latest
@@ -22,7 +27,17 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'master'
+          cache: true
       - uses: arduino/setup-protoc@v3
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\.pub-cache
+            Launcher\.dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
       - name: Bootstrap
         run: |
           dart pub global activate melos
