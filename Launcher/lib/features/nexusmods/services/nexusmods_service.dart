@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:kyber_launcher/features/nexusmods/dialogs/nexusmods_login.dart';
+import 'package:kyber_launcher/shared/ui/dialog/kyber_dialog.dart';
+
 import 'package:http_cache_hive_store/http_cache_hive_store.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
@@ -75,6 +78,24 @@ class NexusModsService {
       _logger
         ..fine('User validated: ${_nexusUser!.name}')
         ..fine('User isPremium: ${_nexusUser!.isPremium}');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        _logger.warning('NexusMods API token is invalid. Clearing token.');
+        Preferences.nexusMods.apiToken = null;
+        _nexusUser = null;
+        NotificationService.error(message: 'Nexus Mods session expired. Please log in again.');
+        
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          showKyberDialog(
+            context: context,
+            builder: (_) => const NexusModsLogin(),
+          );
+        }
+      } else {
+        NotificationService.error(message: 'Failed to load NexusMods user data');
+        _logger.severe('Failed to load NexusMods user data:', e);
+      }
     } catch (e, s) {
       NotificationService.error(message: 'Failed to load NexusMods user data');
       _logger.severe('Failed to load NexusMods user data:', e, s);

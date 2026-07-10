@@ -343,7 +343,11 @@ class MaximaCubit extends Cubit<MaximaState> {
 
       _loggingIn = false;
 
-      await startRtmConnection();
+      try {
+        await startRtmConnection();
+      } catch (e) {
+        logger.warning('Failed to start RTM connection: $e');
+      }
 
       logger.info('Initialized');
 

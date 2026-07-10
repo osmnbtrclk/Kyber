@@ -41,8 +41,10 @@ Future<Task?> _onTaskStart(Task task) async {
   final caFile = File(
     join(FileHelper.getModuleDirectory().path, 'ca_root.pem'),
   );
-  final certificate = caFile.readAsBytesSync();
-  SecurityContext.defaultContext.setTrustedCertificatesBytes(certificate);
+  if (caFile.existsSync()) {
+    final certificate = caFile.readAsBytesSync();
+    SecurityContext.defaultContext.setTrustedCertificatesBytes(certificate);
+  }
 
   return task;
 }

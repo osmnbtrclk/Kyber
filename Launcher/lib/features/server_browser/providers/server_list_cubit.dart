@@ -29,6 +29,10 @@ class ServerListCubit extends Cubit<ServerListState> {
           _friends = value;
           loadServers();
         })
+        .catchError((e) {
+          _friends = [];
+          loadServers();
+        })
         .timeout(
           const Duration(seconds: 5),
           onTimeout: () {

@@ -13,9 +13,13 @@ class MaximaRtmCubit extends Cubit<MaximaRtmState> {
   StreamSubscription<RtmPresence>? _rtmPresenceSubscription;
 
   Future<void> fetchFriends() async {
-    final friends = await getFriendList();
-    _logger.info('Fetched ${friends.length} friends');
-    emit(state.copyWith(friends: friends));
+    try {
+      final friends = await getFriendList();
+      _logger.info('Fetched ${friends.length} friends');
+      emit(state.copyWith(friends: friends));
+    } catch (e) {
+      _logger.warning('Failed to fetch friends: $e');
+    }
   }
 
   bool isRtmConnected() => _rtmPresenceSubscription != null;
@@ -27,11 +31,16 @@ class MaximaRtmCubit extends Cubit<MaximaRtmState> {
     }
 
     _logger.info('Starting presence stream');
-    _rtmPresenceSubscription = getRtmPresences().listen((event) {
-      final newPresences = Map<String, RtmPresence>.from(state.presences);
-      newPresences[event.playerId] = event;
-      emit(state.copyWith(presences: newPresences));
-    });
+    _rtmPresenceSubscription = getRtmPresences().listen(
+      (event) {
+        final newPresences = Map<String, RtmPresence>.from(state.presences);
+        newPresences[event.playerId] = event;
+        emit(state.copyWith(presences: newPresences));
+      },
+      onError: (e) {
+        _logger.warning('RTM Presence stream error: $e');
+      },
+    );
   }
 
   void stopPresenceStream() {

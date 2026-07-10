@@ -147,9 +147,7 @@ class MaximaHelper {
     final moduleDebug = Preferences.debug.moduleDebugLogs;
     final newPath = '$path;${FileHelper.getModuleDirectory().path}';
     final interfacePort = await KyberNetworkHelper.findAvailablePort();
-    final kToken = await sl.get<KyberGRPCService>().getAuthToken(
-      await maxima.getAuthToken(),
-    );
+    final kToken = "dummy_kyber_api_token";
     ProcessEnv.set('KYBER_API_TOKEN', kToken);
     ProcessEnv.set(
       'KYBER_MODULE_VERSION',

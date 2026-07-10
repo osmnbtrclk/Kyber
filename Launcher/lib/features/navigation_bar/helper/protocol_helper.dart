@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:dio/dio.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kyber/kyber.dart';
@@ -17,10 +18,12 @@ import 'package:kyber_launcher/features/maxima/helper/maxima_helper.dart';
 import 'package:kyber_launcher/features/maxima/providers/maxima_cubit.dart';
 import 'package:kyber_launcher/features/mods/helper/mod_helper.dart';
 import 'package:kyber_launcher/features/mods/services/mod_service.dart';
+import 'package:kyber_launcher/features/nexusmods/dialogs/nexusmods_login.dart';
 import 'package:kyber_launcher/features/nexusmods/services/nexusmods_service.dart';
 import 'package:kyber_launcher/features/server_browser/providers/server_browser_cubit.dart';
 import 'package:kyber_launcher/injection_container.dart';
 import 'package:kyber_launcher/main.dart';
+import 'package:kyber_launcher/shared/ui/dialog/kyber_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -150,6 +153,21 @@ class ProtocolHelper {
           Logger.root.info('Adding download to queue: ${mod.name}');
           await sl.get<DownloadOrchestrator>().enqueueDownload(request);
         } catch (exception, stackTrace) {
+          if (exception is DioException &&
+              (exception.response?.statusCode == 401 ||
+                  exception.response?.statusCode == 403)) {
+            Preferences.nexusMods.apiToken = null;
+            NotificationService.error(
+              message: 'Nexus Mods session expired. Please log in again.',
+            );
+            if (navigatorKey.currentContext != null) {
+              showKyberDialog(
+                context: navigatorKey.currentContext!,
+                builder: (_) => const NexusModsLogin(),
+              );
+            }
+            return;
+          }
           Logger.root.severe(
             'error: failed to get download link',
             exception,
