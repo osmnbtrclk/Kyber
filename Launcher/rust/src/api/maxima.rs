@@ -159,6 +159,12 @@ pub async fn start_rtm_connection() -> anyhow::Result<()> {
     }
 
     let mut maxima_l = maxima().lock().await;
+    if maxima_l.dummy_local_user() {
+        unsafe {
+            _rpc_connected = true;
+        }
+        return Ok(());
+    }
     let friends = maxima_l.friends(0).await?;
     let rtm = maxima_l.rtm();
     rtm.login().await?;
