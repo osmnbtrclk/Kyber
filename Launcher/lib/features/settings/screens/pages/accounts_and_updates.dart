@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:file_selector/file_selector.dart';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
@@ -341,6 +342,35 @@ class AccountsAndUpdates extends StatelessWidget {
                   exit(0);
                 },
               ),
+              KyberTableItem.switchButton(
+                title: 'Unlock All Progression',
+                value: Preferences.general.unlockAll,
+                onChange: (value) {
+                  Preferences.general.unlockAll = value;
+                },
+              ),
+              KyberTableItem.button(
+                title: 'Game Path Override',
+                text: Preferences.general.gamePath ?? 'Select executable',
+                onClick: () async {
+                  const typeGroup = XTypeGroup(
+                    label: 'executables',
+                    extensions: ['exe'],
+                  );
+                  final file = await openFile(acceptedTypeGroups: [typeGroup]);
+                  if (file != null) {
+                    Preferences.general.gamePath = file.path;
+                  }
+                },
+              ),
+              if (Preferences.general.gamePath != null)
+                KyberTableItem.button(
+                  title: 'Clear Game Path',
+                  text: 'Clear',
+                  onClick: () {
+                    Preferences.general.gamePath = null;
+                  },
+                ),
               KyberTableItem.switchButton(
                 title: 'Developer Mode',
                 value: Preferences.general.developerMode,

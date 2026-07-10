@@ -299,24 +299,9 @@ class SettingsBoxHeader extends StatelessWidget {
                               mapRotation: mapRotation,
                             );
 
-                            if (ProcessEnv.get('KYBER_API_TOKEN') != 'dummy_kyber_api_token') {
-                              await sl
-                                  .get<KyberGRPCService>()
-                                  .serverBrowserClient
-                                  .validateServer(
-                                    RegisterServerRequest(
-                                      name: startRequest.name,
-                                      description: startRequest.description,
-                                      password: startRequest.password,
-                                      maxPlayerCount: startRequest.maxPlayers,
-                                      explodedMods: [],
-                                      mods: [],
-                                      levelSetup: LevelSetup(map: '', mode: ''),
-                                      statsSource: .KYBER,
-                                    ),
-                                  );
-                            }
-
+                            // Offline mode: Skip validateServer API call
+                            // since we don't use Kyber master server anymore.
+                            
                             final initialCommands = <String>[];
 
                             if (form.value['friendlyFire'] as bool? ?? false) {

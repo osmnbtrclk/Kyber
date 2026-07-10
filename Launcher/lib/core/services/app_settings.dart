@@ -62,6 +62,14 @@ class General {
 
   set modsPath(String value) => box.put('modsPath', value);
 
+  String? get gamePath => box.get('gamePath') as String?;
+
+  set gamePath(String? value) => box.put('gamePath', value);
+
+  bool get unlockAll => box.get('unlockAll', defaultValue: true) as bool;
+
+  set unlockAll(bool value) => box.put('unlockAll', value);
+
   String get proxy => box.get('proxy', defaultValue: '') as String;
 
   set proxy(String value) => box.put('proxy', value);

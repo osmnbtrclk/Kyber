@@ -70,8 +70,13 @@ __int64 InitUnlockArrayHk(__int64 a1, ServerPlayer* player)
         return trampoline(a1, player);
     }
 
-    // Uncomment to disable everything being unlocked
-    // return trampoline(a1, player);
+    const char* unlockAllEnv = std::getenv("KYBER_UNLOCK_ALL");
+    bool unlockAll = unlockAllEnv != nullptr && std::string(unlockAllEnv) == "1";
+
+    if (!unlockAll)
+    {
+        return trampoline(a1, player);
+    }
 
     ServerGamePlayerExtent* extent = player->GetServerGamePlayerExtent();
     KYBER_LOG(Debug, "[Persistence] Initialized unlock array " << player->m_name << " " << std::hex << extent);

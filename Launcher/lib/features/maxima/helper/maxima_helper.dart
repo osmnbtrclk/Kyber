@@ -177,10 +177,16 @@ class MaximaHelper {
       ProcessEnv.delete('KYBER_LOG_LEVEL');
     }
 
+    if (Preferences.general.unlockAll) {
+      ProcessEnv.set('KYBER_UNLOCK_ALL', '1');
+    } else {
+      ProcessEnv.delete('KYBER_UNLOCK_ALL');
+    }
+
     final gameClient = ClientGRPCService('127.0.0.1', interfacePort);
     final gamePID = await maxima.startGame(
       gameSlug: gameSlug ?? 'star-wars-battlefront-2',
-      gamePathOverride: gamePath,
+      gamePathOverride: Preferences.general.gamePath ?? gamePath,
     );
     _logger.info('Started game with PID: $gamePID');
 
