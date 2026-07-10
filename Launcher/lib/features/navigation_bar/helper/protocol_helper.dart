@@ -161,10 +161,7 @@ class ProtocolHelper {
               message: 'Nexus Mods session expired. Please log in again.',
             );
             if (navigatorKey.currentContext != null) {
-              showKyberDialog(
-                context: navigatorKey.currentContext!,
-                builder: (_) => const NexusModsLogin(),
-              );
+              showNexusLoginDialog(navigatorKey.currentContext!);
             }
             return;
           }
