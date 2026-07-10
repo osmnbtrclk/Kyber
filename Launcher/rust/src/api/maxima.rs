@@ -349,7 +349,15 @@ pub async fn start_game(
 ) -> anyhow::Result<u32> {
     let maxima_arc = maxima().clone();
 
-    let offer_id = {
+    let is_dummy = {
+        let maxima = maxima_arc.lock().await;
+        maxima.dummy_local_user()
+    };
+
+    let offer_id = if is_dummy {
+        // Dummy user has no EA library, use a placeholder offer_id
+        "OFB-EAST:109552316".to_string()
+    } else {
         let mut maxima = maxima_arc.lock().await;
         let game = maxima.mut_library().game_by_base_slug(&game_slug).await;
         if game.is_err() {
