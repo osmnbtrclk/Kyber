@@ -151,7 +151,7 @@ class MaximaHelper {
     ProcessEnv.set('KYBER_API_TOKEN', kToken);
     ProcessEnv.set(
       'KYBER_MODULE_VERSION',
-      (await VersionModule.module.getCurrentVersion())!,
+      (await VersionModule.module.getCurrentVersion()) ?? 'unknown',
     );
     ProcessEnv.set('KYBER_INTERFACE_PORT', interfacePort.toString());
     ProcessEnv.set(
