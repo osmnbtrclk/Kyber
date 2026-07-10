@@ -18,6 +18,7 @@ import 'package:kyber_launcher/features/server_host/widgets/settings_box/server_
 import 'package:kyber_launcher/features/server_moderation/providers/moderation_cubit.dart';
 import 'package:kyber_launcher/injection_container.dart';
 import 'package:kyber_launcher/shared/ui/ui.dart';
+import 'package:kyber_launcher/core/services/windows_env.dart';
 import 'package:logging/logging.dart';
 
 class SettingsBoxHeader extends StatelessWidget {
@@ -298,21 +299,23 @@ class SettingsBoxHeader extends StatelessWidget {
                               mapRotation: mapRotation,
                             );
 
-                            await sl
-                                .get<KyberGRPCService>()
-                                .serverBrowserClient
-                                .validateServer(
-                                  RegisterServerRequest(
-                                    name: startRequest.name,
-                                    description: startRequest.description,
-                                    password: startRequest.password,
-                                    maxPlayerCount: startRequest.maxPlayers,
-                                    explodedMods: [],
-                                    mods: [],
-                                    levelSetup: LevelSetup(map: '', mode: ''),
-                                    statsSource: .KYBER,
-                                  ),
-                                );
+                            if (ProcessEnv.get('KYBER_API_TOKEN') != 'dummy_kyber_api_token') {
+                              await sl
+                                  .get<KyberGRPCService>()
+                                  .serverBrowserClient
+                                  .validateServer(
+                                    RegisterServerRequest(
+                                      name: startRequest.name,
+                                      description: startRequest.description,
+                                      password: startRequest.password,
+                                      maxPlayerCount: startRequest.maxPlayers,
+                                      explodedMods: [],
+                                      mods: [],
+                                      levelSetup: LevelSetup(map: '', mode: ''),
+                                      statsSource: .KYBER,
+                                    ),
+                                  );
+                            }
 
                             final initialCommands = <String>[];
 
