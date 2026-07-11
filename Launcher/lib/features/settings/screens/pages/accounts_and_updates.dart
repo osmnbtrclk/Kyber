@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as mt;
 import 'package:flutter/services.dart';
@@ -351,15 +352,11 @@ class AccountsAndUpdates extends StatelessWidget {
               ),
               KyberTableItem.button(
                 title: 'Game Path Override',
-                text: Preferences.general.gamePath ?? 'Select executable',
+                text: Preferences.general.gamePath ?? 'Select game folder',
                 onClick: () async {
-                  const typeGroup = XTypeGroup(
-                    label: 'executables',
-                    extensions: ['exe'],
-                  );
-                  final file = await openFile(acceptedTypeGroups: [typeGroup]);
-                  if (file != null) {
-                    Preferences.general.gamePath = file.path;
+                  final directoryPath = await getDirectoryPath();
+                  if (directoryPath != null) {
+                    Preferences.general.gamePath = p.join(directoryPath, 'starwarsbattlefrontii.exe');
                   }
                 },
               ),
