@@ -9,7 +9,6 @@ import 'package:http_cache_hive_store/http_cache_hive_store.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:kyber_launcher/core/routing/app_router.dart';
 import 'package:kyber_launcher/core/services/app_settings.dart';
 import 'package:kyber_launcher/core/services/notification_service.dart';
 import 'package:kyber_launcher/core/services/storage_helper.dart';
@@ -85,11 +84,6 @@ class NexusModsService {
         Preferences.nexusMods.apiToken = null;
         _nexusUser = null;
         NotificationService.error(message: 'Nexus Mods session expired. Please log in again.');
-        
-        final context = navigatorKey.currentContext;
-        if (context != null) {
-          showNexusLoginDialog(context);
-        }
       } else {
         NotificationService.error(message: 'Failed to load NexusMods user data');
         _logger.severe('Failed to load NexusMods user data:', e);

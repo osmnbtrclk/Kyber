@@ -18,7 +18,6 @@ import 'package:kyber_launcher/features/maxima/helper/maxima_helper.dart';
 import 'package:kyber_launcher/features/maxima/providers/maxima_cubit.dart';
 import 'package:kyber_launcher/features/mods/helper/mod_helper.dart';
 import 'package:kyber_launcher/features/mods/services/mod_service.dart';
-import 'package:kyber_launcher/features/nexusmods/dialogs/nexusmods_login.dart';
 import 'package:kyber_launcher/features/nexusmods/services/nexusmods_service.dart';
 import 'package:kyber_launcher/features/server_browser/providers/server_browser_cubit.dart';
 import 'package:kyber_launcher/injection_container.dart';
@@ -160,9 +159,6 @@ class ProtocolHelper {
             NotificationService.error(
               message: 'Nexus Mods session expired. Please log in again.',
             );
-            if (navigatorKey.currentContext != null) {
-              showNexusLoginDialog(navigatorKey.currentContext!);
-            }
             return;
           }
           Logger.root.severe(
