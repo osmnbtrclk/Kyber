@@ -69,6 +69,33 @@ if (Test-Path $launch_path) {
 
     $content = $content -replace $target4, $replacement4
 
+    $target5 = '(?s)match offer \{\s+Some\(ref offer\) => offer\.execute_path\(false\)\.await\?\.clone\(\),\s+None => return Err\(LaunchError::NoOfferFound\("Unknown"\.to_string\(\)\)\),\s+\}'
+    $replacement5 = 'match offer {
+            Some(ref offer) => offer.execute_path(false).await?.clone(),
+            None => {
+                let mut found_path = None;
+                #[cfg(windows)]
+                {
+                    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+                    if let Ok(key) = hklm.open_subkey("SOFTWARE\\EA Games\\STAR WARS Battlefront II") {
+                        if let Ok(install_dir) = key.get_value::<String, _>("Install Dir") {
+                            let p = std::path::PathBuf::from(install_dir).join("starwarsbattlefrontii.exe");
+                            if p.exists() {
+                                found_path = Some(p);
+                            }
+                        }
+                    }
+                }
+                if let Some(p) = found_path {
+                    p
+                } else {
+                    return Err(LaunchError::NoOfferFound("Unknown".to_string()));
+                }
+            }
+        }'
+
+    $content = $content -replace $target5, $replacement5
+
     Set-Content -Path $launch_path -Value $content -NoNewline
     Write-Host "Patched launch.rs successfully!"
 }
