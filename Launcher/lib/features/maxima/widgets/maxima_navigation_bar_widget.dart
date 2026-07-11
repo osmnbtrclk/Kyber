@@ -243,7 +243,15 @@ class _MaximaNavigationBarWidgetState extends State<MaximaNavigationBarWidget> {
                                           .state
                                           .servicePlayer
                                           ?.avatar !=
-                                      null)
+                                      null &&
+                                      context
+                                          .read<MaximaCubit>()
+                                          .state
+                                          .servicePlayer!
+                                          .avatar!
+                                          .small
+                                          .path
+                                          .isNotEmpty)
                                     Image.network(
                                       context
                                           .read<MaximaCubit>()

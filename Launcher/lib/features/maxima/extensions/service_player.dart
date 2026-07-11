@@ -4,7 +4,7 @@ import 'package:kyber_launcher/gen/rust/api/maxima.dart';
 
 extension on ServicePlayer {
   Image avatarImage() {
-    if (avatar != null) {
+    if (avatar != null && avatar!.medium.path.isNotEmpty) {
       return Image.network(avatar!.medium.path);
     }
 

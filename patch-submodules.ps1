@@ -115,6 +115,15 @@ if (Test-Path $mod_path) {
 
     $content = $content -replace $target3, $replacement3
 
+    $target6 = '(?s)pub async fn friends\(&self, page: u32\) -> Result<Vec<ServicePlayer>, ServiceLayerError> \{.*?let cache_key = format!\("friends_\{\}", page\);'
+    $replacement6 = 'pub async fn friends(&self, page: u32) -> Result<Vec<ServicePlayer>, ServiceLayerError> {
+        if self.dummy_local_user.is_some() {
+            return Ok(Vec::new());
+        }
+        let cache_key = format!("friends_{}", page);'
+
+    $content = $content -replace $target6, $replacement6
+
     Set-Content -Path $mod_path -Value $content -NoNewline
     Write-Host "Patched mod.rs successfully!"
 }
